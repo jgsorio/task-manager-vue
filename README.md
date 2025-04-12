@@ -12,9 +12,7 @@ Uma aplicação simples de gerenciamento de tarefas desenvolvida com **Vue 3** e
 - 💾 Persistência de dados via `localStorage`
 - 📱 Responsivo para dispositivos móveis
 
-## 🖼️ Preview
 
-![Task Manager Preview](https://user-images.githubusercontent.com/0000000/your-screenshot.png) <!-- Substitua com um link válido, se quiser -->
 
 ## 🧪 Tecnologias Utilizadas
 
