@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Task Manager</title>
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #e2e2e2;
+        }
+
+        #app {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin: 0 auto;
+            margin-top: 20px;
+            max-width: 1200px;
+            padding: 20px;
+        }
+
+        form input, form select {
+            padding: 10px;
+            margin-right: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            color: black;
+        }
+
+        form input::placeholder {
+            color: black;
+        }
+
+        form select {
+            background-color: white;
+        }
+
+        button {
+            padding: 10px;
+            border: 1px solid #67a3d4;
+            background-color: #67a3d4;
+            border-radius: 5px;
+            color: white;
+            cursor: pointer;
+        }
+
+        .filter {
+            padding: 10px;
+            margin-top: 20px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            color: black;
+        }
+
+        .tasks {
+            margin-top: 20px;
+            list-style: none;
+            padding: 0;
+            width: 80%;
+        }
+
+        .tasks .task {
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            padding: 10px;
+            margin-top: 10px;
+            display: flex;
+            justify-content: space-between;
+            background-color: white;
+            box-shadow: 1px 1px 5px rgba(0, 0, 0, 0.2);
+        }
+
+        .done {
+            text-decoration: line-through;
+        }
+
+        .task.high {
+            border-left: 5px solid red;
+        }
+
+        .task.medium {
+            border-left: 5px solid yellow;
+        }
+
+        .task.low {
+            border-left: 5px solid green;
+        }
+
+        .delete {
+            cursor: pointer;
+        }
+
+        @media screen and (max-width: 600px) {
+            #app {
+                width: 100%;
+                margin: 20px auto;
+                padding: 0;
+            }
+           
+        }
+    </style>
+</head>
+<body>
+    <div id="app">
+        <form @submit.prevent="addNewTask">
+            <input v-model="newTask" type="text" placeholder="Enter a task" />
+            <select name="priority" v-model="newPriority">
+                <option disabled selected value="">Select a priority</option>
+                <option value="high">High</option>
+                <option value="medium">Medium</option>
+                <option value="low">Low</option>
+            </select>
+            <button type="submit">Add</button>
+        </form>
+        <input type="text" placeholder="Filter tasks" class="filter" @keyup="filterTasks">
+        <ul class="tasks">
+            <li v-for="task in filteredTasks" :key="task.id" class="task" :class="[task.priority, task.done ? 'done' : '']">
+                <span><input type="checkbox" name="task" :checked="task.done" @change="task.done = !task.done"> {{ task.description }}</span>
+                <span @click="deleteTask(task.id)" class="delete"><i class="fa-regular fa-trash-can"></i></span>
+            </li>
+        </ul>
+    </div>
+    <script>
+        const { createApp, onMounted, ref, watch } = Vue;
+        
+        const App = {
+            setup() {
+                const newTask = ref('');
+                const newPriority = ref('');
+                const tasks = ref([]);
+                const filteredTasks = ref([]);
+                
+                const addNewTask = () => {
+                    tasks.value.push({
+                        id: Date.now(),
+                        description: newTask.value,
+                        priority: newPriority.value,
+                        done: false
+                    });
+                    newTask.value = '';
+                    newPriority.value = '';
+                }
+
+                const filterTasks = (e) => {
+                    const filter = e.target.value;
+                    filteredTasks.value = tasks.value;
+                    if (filter !== '') {
+                        filteredTasks.value = tasks.value.filter(task => task.description.toLowerCase().includes(filter));
+                    }
+                }
+
+                const deleteTask = (id) => {
+                    let index = tasks.value.findIndex(task => task.id === id);
+                    tasks.value.splice(index, 1);
+                }
+
+                onMounted(() => {
+                    tasks.value = JSON.parse(localStorage.getItem('@tasks') || '[]');
+                    filteredTasks.value = tasks.value;
+                })
+
+                watch(tasks, () => {
+                    localStorage.setItem('@tasks', JSON.stringify(tasks.value));
+                }, { deep: true });
+
+                return {
+                    tasks,
+                    newTask,
+                    newPriority,
+                    addNewTask,
+                    filterTasks,
+                    filteredTasks,
+                    deleteTask
+                }
+            }
+        }
+
+        createApp(App).mount('#app');
+    </script>
+</body>
+</html>
